@@ -82,7 +82,7 @@ def cliente():
             {portal_dir_cli}, {esc_dir_cli}, {puerta_dir_cli}, {piso_dir_cli});\n'''
             file.write(row)
             
-#cliente()
+cliente()
             
 def empleado():
     with open('EMPLEADO.sql', 'w') as file:
@@ -106,7 +106,7 @@ def empleado():
             {activo_emp});\n'''     
             file.write(row)
         
-#empleado()
+empleado()
             
 dnis_empleados = []
             
@@ -152,7 +152,7 @@ def ocupaciones():
         else:
             repartidor(dni)
 
-#ocupaciones()
+ocupaciones()
 
 dni_deps = []
 dni_reps = []
@@ -190,7 +190,7 @@ def habla_dep():
                 ({dni_dep}, {idioma_dep});\n'''
                 file.write(row)
  
-#habla_dep()
+habla_dep()
                  
 dnis_clientes = []
 
@@ -249,7 +249,7 @@ def pedido():
                 {precio_ped_eu}, {valoracion_ped}, {dni_cli});\n'''
                 file.write(row)
 
-#pedido()
+pedido()
 
 permisos = ['AM', 'A1', 'A2', 'A', 'B1', 'B', 'C1', 'C', 'D1', 'D', 'BE',
             'C1E', 'CE', 'D1E', 'DE']
@@ -268,7 +268,7 @@ def permiso_rep():
                 ({dni_rep}, {permiso_rep});\n'''
                 file.write(row)
 
-#permiso_rep()
+permiso_rep()
 
 ingredientes_p = {}
 precios_p = {}
@@ -319,7 +319,7 @@ def pizza():
                 {tamanyo_piz});\n'''
                 file.write(row)
                 
-#pizza()
+pizza()
 
 proveedores = []
 
@@ -388,7 +388,7 @@ def proveedor():
                 file.write(row)
             n += 1
 
-#proveedor()
+proveedor()
 
 def tlf_cliente():
     with open('TLF_CLIENTE.sql', 'w') as file:
@@ -400,7 +400,7 @@ def tlf_cliente():
                 ({dni_cli}, {tlf_cli});\n'''
                 file.write(row)
 
-#tlf_cliente()
+tlf_cliente()
                 
 vehiculos = {'motos' : ['Aprilia SXR 50',
                         'Motron Breezy 50',
@@ -449,7 +449,7 @@ def vehiculo():
             {modelo_veh}, TO_DATE({fecha_itv_veh}, 'DD/MM/YYYY'));\n'''
             file.write(row)
             
-#vehiculo()
+vehiculo()
 
 matriculas = []
 
@@ -473,7 +473,7 @@ def conduce():
             ({dni_rep}, {matricula_veh});\n'''
             file.write(row)
 
-#conduce()
+conduce()
 
 pedidos = []
 
@@ -514,7 +514,7 @@ def contenido():
                 cantidad) values ({cod_ped}, {fecha_ped}, {cod_piz}, {cantidad});\n'''
                 file.write(row)
             
-#contenido()
+contenido()
 
 conduce = []
 
@@ -542,7 +542,7 @@ def entrega():
                 {hora_entrega});\n'''
                 file.write(row)
                 
-#entrega()
+entrega()
 
 cods_bebidas = []
 
@@ -570,7 +570,7 @@ def incluye_beb():
                     {cantidad});\n'''
                     file.write(row)
                 
-#incluye_beb()
+incluye_beb()
 
 nifs_proveedores = []
 
@@ -608,7 +608,7 @@ def ingrediente():
                 file.write(row)
                 d[nif_prov] += 1
 
-#ingrediente()
+ingrediente()
 
 ing_prov = {}
 
@@ -643,7 +643,7 @@ def lleva():
                     values ({cod_piz}, {cod_ing}, {nif_prov});\n'''
                     file.write(row)
 
-#lleva()
+lleva()
 
 def suministro():
     with open('SUMINISTRO.sql', 'w') as file:
@@ -692,7 +692,7 @@ def transporte():
                 '{hora_llegada_trans}', {distancia_trans_km});\n'''
                 file.write(row)
                 
-#transporte()
+transporte()
 
 def tiene_mem():
     with open('TIENE_MEM.sql', 'w') as file:
@@ -703,7 +703,7 @@ def tiene_mem():
             ('{dni_cli}', '{nombre_mem}');\n'''
             file.write(row)
 
-#tiene_mem()
+tiene_mem()
 
 tiene_mem = []
 
@@ -732,7 +732,7 @@ def meses_mem():
                 '{mes_mem}', '{anyo_mem}');\n'''
                 file.write(row)
            
-#meses_mem()
+meses_mem()
 
             
                        
