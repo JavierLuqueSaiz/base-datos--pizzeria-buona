@@ -1,0 +1,47 @@
+1. Mostrar el dni, nombre y apellidos de los 5 repartidores que más kilómetros han recorrido ordenados de más a menos kilómetros recorridos; y mostrar también la cantidad de kilómetros recorrida.
+
+MATCH (r:Repartidor)<-[:Conducido_por]-(:Conducir)-[:Recorre]->(t:Transporte)
+WITH r, SUM(t.distancia_km) AS kilometros
+RETURN r.dni AS DNI, r.nombre AS Nombre, r.apellidos AS Apellidos, kilometros AS Kilómetros
+ORDER BY kilometros DESC
+LIMIT 5
+
+2. Mostrar las 10 pizzas más vendidas a partir de las 10 de la noche hasta las 4 y media de la mañana.
+
+MATCH (r:Repartidor)<-[:Conducido_por]-(:Conducir)-[:Recorre]->(t:Transporte)
+WITH r, SUM(t.distancia_km) AS kilometros
+RETURN r.dni AS DNI, r.nombre AS Nombre, r.apellidos AS Apellidos, kilometros AS Kilómetros
+ORDER BY kilometros DESC
+LIMIT 5
+
+3. Mostrar el dni, nombre y apellidos de los repartidores activos que lleven menos de 10 años contratados cuyos pedidos entregados tengan al menos un pedido con 9 de valoración; y mostrar también cuantos pedidos tiene cada repartidor con 9 de valoración, ordenados por esta cantidad descendentemente.
+
+MATCH (r:Repartidor)<-[:Conducido_por]-(:Conducir)-[:Entrega]->(p:Pedido)
+WHERE r.activo AND r.anyos_contratado < 10 AND p.valoracion = 9
+WITH r, COUNT(p) AS Pedidos
+RETURN r.dni AS DNI, r.nombre AS Nombre, r.apellidos AS Apellidos, Pedidos
+ORDER BY Pedidos DESC
+
+4. Mostrar el nombre de los ingredientes que están en al menos 6 tipos de pizzas diferentes, mostrando también la cantidad de pizzas en las que están y en orden alfabético de los ingredientes.
+
+MATCH (i:Ingrediente)<-[:Lleva]-(p:Pizza)
+WITH i, COUNT(DISTINCT p.nombre) AS Pizzas
+WHERE Pizzas >= 6
+RETURN DISTINCT i.nombre AS Nombre, Pizzas
+ORDER BY i.nombre
+
+5. Mostrar el dni, nombre y apellidos de cada repartidor ordenados por apellidos, junto con la matrícula y el modelo del vehículo con el que han recorrido más kilómetros, mostrando también los kilómetros recorridos con ese transporte.
+
+MATCH (r:Repartidor)<-[:Conducido_por]-(c:Conducir)-[:Conduce]->(v:Vehiculo), (c)-[:Recorre]->(t:Transporte)
+WITH r, v, SUM(t.distancia_km) AS kilometros
+ORDER BY r.dni, kilometros DESC
+WITH r, COLLECT({vehiculo: v, kilometros: kilometros})[0] AS datos
+RETURN r.dni AS DNI, r.nombre AS Nombre, r.apellidos AS Apellidos, datos.vehiculo.matricula AS Matrícula, datos.vehiculo.modelo AS Modelo, datos.kilometros AS Kilómetros
+ORDER BY r.apellidos
+
+6. Mostrar el dni, nombre y apellidos de los clientes que han tenido membresía en más de 5 meses y todas han sido del mismo tipo, mostrando también el tipo de la membresía.
+
+MATCH (c:Cliente)-[:Tiene]->(m:Membresia)
+WITH c, COLLECT(DISTINCT m.nombre) AS membresias, COUNT(m) AS cantidad
+WHERE cantidad > 5 AND SIZE(membresias) = 1
+RETURN c.dni AS DNI, c.nombre AS Nombre, c.apellidos AS Apellidos, membresias[0] AS Membresías

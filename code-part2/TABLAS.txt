@@ -1,0 +1,247 @@
+CREATE KEYSPACE pizzeria WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '3'};
+
+-- Tabla Empleado
+
+CREATE TABLE empleado (
+	dni VARCHAR PRIMARY KEY,
+	nombre VARCHAR,
+	apellidos VARCHAR,
+	anyos_contratado INT,
+	edad INT,
+	activo BOOLEAN,
+	tipo VARCHAR
+);
+
+-- Tabla Vehículo
+
+CREATE TABLE vehiculo (
+	matricula VARCHAR PRIMARY KEY,
+	capacidad INT,
+	modelo VARCHAR,
+	fecha_itv DATE
+);
+
+-- Tabla Suministro
+
+CREATE TABLE suministro (
+	dia DATE,
+	num_ing VARCHAR,
+	hora TIME,
+	cantidad FLOAT,
+	PRIMARY KEY (dia, num_ing)
+);
+
+-- Tabla Ingrediente
+
+CREATE TABLE ingrediente (
+	numero VARCHAR PRIMARY KEY,
+	nombre VARCHAR,
+	precio_eu FLOAT,
+	cant_dispensa FLOAT
+);
+
+-- Tabla Pizza 
+
+CREATE TABLE pizza (
+	num_pizza VARCHAR,
+	num_ing VARCHAR,
+	nombre VARCHAR STATIC,
+	precio_eu FLOAT STATIC,
+	tamanyo VARCHAR STATIC,
+	nombre_ing VARCHAR,
+	PRIMARY KEY (num_pizza, num_ing)
+)
+WITH CLUSTERING ORDER BY (num_ing ASC);
+	
+-- Tabla Pedido
+
+CREATE TABLE pedido (
+	codigo VARCHAR,
+	fecha DATE,
+	num_piz VARCHAR,
+	hora TIME STATIC,
+	precio_eu FLOAT STATIC,
+	valoracion INT STATIC,
+	cantidad INT,
+	nombre_piz VARCHAR,
+	tamanyo_piz VARCHAR,
+	PRIMARY KEY ((codigo, fecha), num_piz)
+)
+WITH CLUSTERING ORDER BY (num_piz ASC);
+
+-- Tabla Membresía
+
+CREATE TABLE membresia (
+	nombre VARCHAR PRIMARY KEY,
+	pedidos_necesarios INT,
+	precio_mes FLOAT,
+	descuento INT
+);
+
+-- Tabla Cliente
+
+CREATE TYPE direccion_t (
+	tipo_via VARCHAR,
+	nombre_via VARCHAR,
+	portal VARCHAR,
+	escalera VARCHAR,
+	puerta VARCHAR,
+	piso VARCHAR
+);
+
+CREATE TYPE periodo_t (
+	anyo INT,
+	mes INT
+);
+
+CREATE TABLE cliente (
+	dni VARCHAR,
+	nombre_mem VARCHAR,
+	direccion FROZEN<direccion_t> STATIC,
+	telefonos SET<VARCHAR> STATIC,
+	nombre VARCHAR STATIC,
+	apellidos VARCHAR STATIC,
+	periodo_mes SET<FROZEN<periodo_t>>,
+	PRIMARY KEY (dni, nombre_mem)
+)
+WITH CLUSTERING ORDER BY (nombre_mem ASC);
+
+-- Pedido por fecha y hora
+
+CREATE TABLE pedido_por_fecha_y_hora (
+	agrupa INT,
+	fecha DATE,
+	hora TIME,
+	codigo VARCHAR,
+	precio_eu FLOAT,
+	valoracion INT,
+	PRIMARY KEY (agrupa, fecha, hora, codigo)
+)
+WITH CLUSTERING ORDER BY (fecha DESC, hora DESC, codigo ASC);
+
+-- Pizza por cantidad
+
+CREATE TABLE pizza_por_cantidad (
+	cod_ped VARCHAR,
+	fecha_ped DATE,
+	cantidad INT,
+	num_piz VARCHAR,
+	nombre VARCHAR,
+	tamanyo VARCHAR,
+	precio_eu FLOAT,
+	PRIMARY KEY ((cod_ped, fecha_ped), cantidad, num_piz)
+)
+WITH CLUSTERING ORDER BY (cantidad DESC, num_piz ASC);
+
+-- Cliente por apellidos y nombre
+
+CREATE TABLE cliente_por_apellidos_y_nombre (
+	agrupa INT,
+	apellidos VARCHAR,
+	nombre VARCHAR,
+	dni VARCHAR,
+	direccion FROZEN<direccion_t>,
+	telefonos SET<VARCHAR>,
+	PRIMARY KEY (agrupa, apellidos, nombre, dni)
+)
+WITH CLUSTERING ORDER BY (apellidos ASC, nombre ASC, dni ASC);
+
+-- Membresía por año y mes
+
+CREATE TABLE membresia_por_anyo_y_mes (
+	dni VARCHAR,
+	periodo_mes FROZEN<periodo_t>,
+	nombre VARCHAR,
+	pedidos_necesarios INT,
+	precio_mes FLOAT,
+	descuento INT,
+	PRIMARY KEY(dni, periodo_mes, nombre)
+)
+WITH CLUSTERING ORDER BY (anyo DESC, mes DESC, nombre ASC);
+
+-- Pedido por valoración
+
+CREATE TABLE pedido_por_valoracion (
+	dni VARCHAR,
+	valoracion INT,
+	codigo VARCHAR,
+	fecha DATE,
+	hora TIME,
+	precio_eu FLOAT,
+	PRIMARY KEY (dni, valoracion, codigo, fecha)
+)
+WITH CLUSTERING ORDER BY (valoracion DESC, codigo ASC, fecha ASC);
+
+-- Empleado más cinco años contratado
+
+CREATE TABLE empleado_mas_cinco_anyos (
+	agrupa INT,
+	anyos_contratado INT,
+	dni VARCHAR,
+	nombre VARCHAR,
+	apellidos VARCHAR,
+	edad INT,
+	activo BOOLEAN,
+	tipo VARCHAR,
+	PRIMARY KEY (agrupa, anyos_contratado, dni)
+)
+WITH CLUSTERING ORDER BY (anyos_contratado ASC, dni ASC);
+
+-- Vehículo por matrícula
+
+CREATE TABLE vehiculo_por_matricula (
+	agrupa INT,
+	matricula VARCHAR,
+	capacidad INT,
+	modelo VARCHAR,
+	fecha_itv DATE,
+	PRIMARY KEY (agrupa, matricula)
+)
+WITH CLUSTERING ORDER BY (matricula ASC);
+
+-- Repartidor por apellidos y nombre
+
+CREATE TABLE repartidor_por_apellidos_y_nombre (
+	matricula VARCHAR,
+	apellidos VARCHAR,
+	nombre VARCHAR,
+	dni VARCHAR,
+	anyos_contratado INT,
+	edad INT,
+	activo BOOLEAN,
+	PRIMARY KEY (matricula, apellidos, nombre, dni)
+)
+WITH CLUSTERING ORDER BY (apellidos ASC, nombre ASC, dni ASC);
+
+-- Pizza por nombre
+
+CREATE TABLE pizza_por_nombre (
+	agrupa INT,
+	nombre VARCHAR,
+	num_piz VARCHAR,
+	PRIMARY KEY (agrupa, nombre, num_piz)
+)
+WITH CLUSTERING ORDER BY (nombre ASC, num_piz ASC);
+
+-- Ingrediente por nombre y numero
+
+CREATE TABLE ingrediente_por_nombre_y_numero (
+	num_piz VARCHAR,
+	nombre VARCHAR,
+	numero VARCHAR,
+	precio_eu FLOAT,
+	cant_despensa FLOAT,
+	PRIMARY KEY (num_piz, nombre, numero)
+)
+WITH CLUSTERING ORDER BY (nombre ASC, numero ASC);
+
+-- Suministro por día y hora
+
+CREATE TABLE suministro_por_dia_y_hora (
+	numero VARCHAR,
+	dia DATE,
+	hora TIME,
+	cantidad FLOAT,
+	PRIMARY KEY (numero, dia, hora)
+)
+WITH CLUSTERING ORDER BY (dia DESC, hora DESC);

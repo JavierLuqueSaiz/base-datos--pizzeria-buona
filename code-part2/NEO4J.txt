@@ -1,0 +1,318 @@
+-- Consulta Dependiente
+
+SELECT e.dni_emp AS dni,
+       e.nombre_emp AS nombre,
+       e.apellidos_emp AS apellidos,
+       e.anyos_contrato_emp AS anyos_contratado,
+       e.edad_emp AS edad,
+       CASE
+           WHEN e.activo_emp = 1 THEN 'true'
+           WHEN e.activo_emp = 0 THEN 'false'
+       END AS activo
+FROM empleado e
+RIGHT JOIN dependiente d ON e.dni_emp = d.dni_dep;
+
+-- Carga Dependiente
+
+LOAD CSV WITH HEADERS FROM 'file:///pizzeria/dependiente.csv' AS X
+CREATE (d:Empleado:Dependiente)
+SET d.dni = X.DNI,
+    d.nombre = X.NOMBRE,
+    d.apellidos = X.APELLIDOS,
+    d.anyos_contratado = toInteger(X.ANYOS_CONTRATADO),
+    d.edad = toInteger(X.EDAD),
+    d.activo = X.ACTIVO = 'true',
+    d.idiomas = []
+
+-- Consulta Idiomas
+
+SELECT dni_dep AS dni,
+       idioma_dep AS idiomas
+FROM habla_dep;
+
+-- Carga Idiomas
+
+LOAD CSV WITH HEADERS FROM 'file:///pizzeria/idiomas.csv' AS X
+MATCH (d:Dependiente{dni:X.DNI})
+SET d.idiomas = d.idiomas + X.IDIOMAS
+
+-- Consulta Repartidor
+
+SELECT e.dni_emp AS dni,
+       e.nombre_emp AS nombre,
+       e.apellidos_emp AS apellidos,
+       e.anyos_contrato_emp AS anyos_contratado,
+       e.edad_emp AS edad,
+       CASE
+           WHEN e.activo_emp = 1 THEN 'true'
+           WHEN e.activo_emp = 0 THEN 'false'
+       END AS activo
+FROM empleado e
+RIGHT JOIN repartidor r ON e.dni_emp = r.dni_rep;
+
+-- Carga Repartidor
+
+LOAD CSV WITH HEADERS FROM 'file:///pizzeria/repartidor.csv' AS X
+CREATE (r:Empleado:Repartidor)
+SET r.dni = X.DNI,
+    r.nombre = X.NOMBRE,
+    r.apellidos = X.APELLIDOS,
+    r.anyos_contratado = toInteger(X.ANYOS_CONTRATADO),
+    r.edad = toInteger(X.EDAD),
+    r.activo = X.ACTIVO = 'true',
+    r.permisos = []
+
+-- Consulta Permisos
+
+SELECT dni_rep AS dni,
+       permiso_rep AS permisos
+FROM permiso_rep;
+
+-- Carga Permisos
+
+LOAD CSV WITH HEADERS FROM 'file:///pizzeria/permisos.csv' AS X
+MATCH (r:Repartidor{dni:X.DNI})
+SET r.permisos = r.permisos + X.PERMISOS
+
+-- Consulta Ingrediente
+
+SELECT nif_prov || cod_ing AS numero,
+       nombre_ing AS nombre,
+       precio_ing_eukg AS precio_eu,
+       ing_despensa_kg AS cant_despensa
+FROM ingrediente;
+
+-- Carga Ingrediente
+
+LOAD CSV WITH HEADERS FROM 'file:///pizzeria/ingrediente.csv' AS X
+CREATE (i:Ingrediente)
+SET i.numero = X.NUMERO,
+    i.nombre = X.NOMBRE,
+    i.precio_eu = toFloat(X.PRECIO_EU),
+    i.cant_despensa = toFloat(X.CANT_DESPENSA)
+
+-- Consulta Suministro / Suministra / Recibe
+
+SELECT nif_prov || cod_ing AS numero,
+       dia_sum AS dia,
+       hora_sum AS hora,
+       cantidad_sum_kg AS cantidad,
+       dni_dep AS dni
+FROM suministro;
+
+-- Carga Suministro / Suministra / Recibe
+
+LOAD CSV WITH HEADERS FROM 'file:///pizzeria/suministro.csv' AS X
+MATCH (d:Dependiente{dni:X.DNI}),(i:Ingrediente{numero:X.NUMERO})
+CREATE (d)-[rr:Recibe]->(s:Suministro)-[rs:Suministra]->(i)
+SET s.numero = date(X.DIA),
+    s.nombre = time(X.HORA),
+    s.precio_eu = toFloat(X.CANTIDAD)
+
+-- Consulta Pizza
+
+SELECT cod_piz AS numero,
+       nombre_piz AS nombre,
+       precio_piz_eu AS precio_eu,
+       tamanyo_piz AS taamnyo
+FROM pizza;
+
+-- Carga Pizza
+
+LOAD CSV WITH HEADERS FROM 'file:///pizzeria/pizza.csv' AS X
+CREATE (p:Pizza)
+SET p.numero = X.NUMERO,
+    p.nombre = X.NOMBRE,
+    p.precio_eu = toFloat(X.PRECIO_EU),
+    p.tamanyo = X.TAMANYO
+
+-- Consulta Lleva
+
+SELECT cod_piz,
+       nif_prov || cod_ing AS cod_ing
+FROM lleva;
+
+-- Carga Lleva
+
+LOAD CSV WITH HEADERS FROM 'file:///pizzeria/lleva.csv' AS X
+MATCH (p:Pizza{numero:X.COD_PIZ}),(i:Ingrediente{numero:X.COD_ING})
+CREATE (p)-[r:Lleva]->(i)
+
+-- Consulta Cliente
+
+SELECT dni_cli AS dni,
+       nombre_cli AS nombre,
+       apellidos_cli AS apellidos,
+       tipo_via_dir_cli AS tipo_via_dir,
+       nombre_via_dir_cli AS nombre_via_dir,
+       portal_dir_cli AS portal_dir,
+       esc_dir_cli AS escalera_dir,
+       puerta_dir_cli AS puerta_dir,
+       piso_dir_cli AS piso_dir
+FROM cliente;
+
+-- Carga Cliente
+
+LOAD CSV WITH HEADERS FROM 'file:///pizzeria/cliente.csv' AS X
+CREATE (c:Cliente)
+SET c.dni = X.DNI,
+    c.nombre = X.NOMBRE,
+    c.apellidos = X.APELLIDOS,
+    c.tipo_via_dir = X.TIPO_VIA_DIR,
+    c.nombre_via_dir = X.NOMBRE_VIA_DIR,
+    c.portal_dir = X.PORTAL_DIR,
+    c.escalera_dir = X.ESCALERA_DIR,
+    c.puerta_dir = X.PUERTA_DIR,
+    c.piso_dir = X.PISO_DIR,
+    c.telefonos = []
+
+-- Consulta Teléfonos
+
+SELECT dni_cli AS dni,
+       tlf_cli AS telefonos
+FROM tlf_cliente;
+
+-- Carga Teléfonos
+
+LOAD CSV WITH HEADERS FROM 'file:///pizzeria/telefonos.csv' AS X
+MATCH (c:Cliente{dni:X.DNI})
+SET c.telefonos = c.telefonos + X.TELEFONOS
+
+-- Consulta Pedido / Realiza
+
+SELECT cod_ped AS codigo,
+       fecha_ped AS fecha,
+       hora_ped AS hora,
+       precio_ped_eu AS precio_eu,
+       valoracion_ped AS valoracion,
+       dni_cli AS dni
+FROM pedido;
+
+-- Carga Pedido / Realiza
+
+LOAD CSV WITH HEADERS FROM 'file:///pizzeria/pedido.csv' AS X
+MATCH (c:Cliente{dni:X.DNI})
+CREATE (c)-[r:Realiza]->(p:Pedido)
+SET p.codigo = X.CODIGO,
+    p.fecha = date(X.FECHA),
+    p.hora = time(X.HORA),
+    p.precio_eu = toFloat(X.PRECIO_EU),
+    p.valoracion = toInteger(X.VALORACION)
+
+-- Consulta Contenido
+
+SELECT cod_ped AS codigo,
+       fecha_ped AS fecha,
+       cod_piz AS numero,
+       cantidad
+FROM contenido;
+
+-- Carga Contenido
+
+LOAD CSV WITH HEADERS FROM 'file:///pizzeria/contenido.csv' AS X
+MATCH (p:Pedido{codigo:X.CODIGO,fecha:date(X.FECHA)}),
+    (pi:Pizza{numero:X.NUMERO})
+CREATE (p)-[r:Contiene]->(pi)
+SET r.cantidad = toInteger(X.CANTIDAD)
+
+-- Consulta Membresia
+
+SELECT nombre_mem AS nombre,
+       pedidos_mem AS pedidos_necesarios,
+       precio_mes_mem_eu AS precio_mes,
+       descuento_mem_per AS descuento
+FROM membresia;
+
+-- Carga Membresia
+
+LOAD CSV WITH HEADERS FROM 'file:///pizzeria/membresia.csv' AS X
+CREATE (m:Membresia)
+SET m.nombre = X.NOMBRE,
+    m.pedidos_necesarios = toInteger(X.PEDIDOS_NECESARIOS),
+    m.precio_mes = toFloat(X.PRECIO_MES),
+    m.descuento = toInteger(X.DESCUENTO)
+
+-- Consulta Tiene
+
+SELECT dni_cli AS dni,
+       nombre_mem AS nombre,
+       mes_orden AS mes,
+       anyo_mem AS anyo
+FROM meses_mem;
+
+-- Carga Tiene
+
+LOAD CSV WITH HEADERS FROM 'file:///pizzeria/tiene.csv' AS X
+MATCH (m:Membresia{nombre:X.NOMBRE}),(c:Cliente{dni:X.DNI})
+CREATE (c)-[r:Tiene]->(m)
+SET r.anyo = toInteger(X.ANYO),
+    r.mes = toInteger(X.MES)
+
+-- Consulta Vehiculo
+
+SELECT matricula_veh AS matricula,
+       capacidad_veh AS capacidad,
+       modelo_veh AS modelo,
+       fecha_itv_veh AS fecha_itv
+FROM vehiculo;
+
+-- Carga Vehiculo
+
+LOAD CSV WITH HEADERS FROM 'file:///pizzeria/vehiculo.csv' AS X
+CREATE (v:Vehiculo)
+SET v.matricula = X.MATRICULA,
+    v.capacidad = toInteger(X.CAPACIDAD),
+    v.modelo = X.MODELO,
+    v.fecha_itv = date(X.FECHA_ITV)
+
+-- Consulta Conducir / Conducido_por / Conduce
+
+SELECT dni_rep AS dni,
+       matricula_veh AS matricula
+FROM conduce;
+
+-- Carga Conducir / Conducido_por / Conduce
+
+LOAD CSV WITH HEADERS FROM 'file:///pizzeria/conduce.csv' AS X
+MATCH (r:Repartidor{dni:X.DNI}),(v:Vehiculo{matricula:X.MATRICULA})
+CREATE (v)<-[rc:Conduce]-(c:Conducir)-[rcp:Conducido_por]->(r)
+
+-- Consulta Transporte / Recorre
+
+SELECT dni_rep AS dni,
+       matricula_veh AS matricula,
+       dia_trans AS dia,
+       hora_salida_trans AS hora_salida,
+       hora_llegada_trans AS hora_llegada,
+       distancia_trans_km AS distancia_km
+FROM transporte;
+
+-- Carga Transporte / Recorre
+
+LOAD CSV WITH HEADERS FROM 'file:///pizzeria/transporte.csv' AS X
+MATCH (r:Repartidor{dni:X.DNI})<-[rcp:Conducido_por]-
+    (c:Conducir)-[rc:Conduce]->(v:Vehiculo{matricula:X.MATRICULA})
+CREATE (c)-[rr:Recorre]->(t:Transporte)
+SET t.dia = date(X.DIA),
+    t.hora_salida = time(X.HORA_SALIDA),
+    t.hora_llegada = time(X.HORA_LLEGADA),
+    t.distancia_km = toFloat(X.DISTANCIA_KM)
+
+-- Consulta Entrega
+
+SELECT dni_rep AS dni,
+       matricula_veh AS matricula,
+       cod_ped AS codigo,
+       fecha_ped AS fecha,
+       hora_entrega_ped AS hora_entrega
+FROM entrega;
+
+-- Carga Entrega
+
+LOAD CSV WITH HEADERS FROM 'file:///pizzeria/entrega.csv' AS X
+MATCH (r:Repartidor{dni:X.DNI})<-[rcp:Conducido_por]-
+    (c:Conducir)-[rc:Conduce]->(v:Vehiculo{matricula:X.MATRICULA}),
+    (p:Pedido{codigo:X.CODIGO,fecha:date(X.FECHA)})
+CREATE (c)-[e:Entrega]->(p)
+SET e.hora_entrega = time(X.HORA_ENTREGA)
+

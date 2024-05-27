@@ -1,0 +1,316 @@
+-- Cliente
+
+SELECT c.dni_cli AS dni,
+       CASE
+           WHEN m.nombre_mem IS NULL THEN 'Ninguna'
+           WHEN m.nombre_mem IS NOT NULL THEN m.nombre_mem
+       END AS nombre_mem,
+       '{tipo_via:' || c.tipo_via_dir_cli ||
+       ',nombre_via:' || c.nombre_via_dir_cli ||
+       ',portal:' || c.portal_dir_cli ||
+       CASE 
+           WHEN c.esc_dir_cli IS NULL THEN ',escalera:null'
+           WHEN c.esc_dir_cli IS NOT NULL THEN ',escalera:' || c.esc_dir_cli
+       END ||
+       ',puerta:' || c.puerta_dir_cli ||
+       CASE 
+           WHEN c.piso_dir_cli IS NULL THEN ',piso:null'
+           WHEN c.piso_dir_cli IS NOT NULL THEN ',piso:' || c.piso_dir_cli
+       END ||
+       '}' AS direccion,
+       '{' || LISTAGG(t.tlf_cli, ',') WITHIN GROUP (ORDER BY t.tlf_cli)
+       || '}' AS telefonos,
+       c.nombre_cli AS nombre,
+       c.apellidos_cli AS apellidos,
+       CASE
+           WHEN m.nombre_mem IS NULL THEN NULL
+           WHEN m.nombre_mem IS NOT NULL THEN
+                '{' || LISTAGG('{anyo:' || m.anyo_mem ||
+                               ',mes:' || m.mes_orden || '}', ',') WITHIN GROUP (ORDER BY m.anyo_mem DESC, m.mes_orden DESC)
+       || '}'
+       END AS periodo_mes
+FROM cliente c
+LEFT JOIN meses_mem m ON c.dni_cli = m.dni_cli
+LEFT JOIN tlf_cliente t ON c.dni_cli = t.dni_cli
+GROUP BY c.dni_cli, m.nombre_mem, c.tipo_via_dir_cli,
+         c.nombre_via_dir_cli, c.portal_dir_cli, c.esc_dir_cli,
+         c.puerta_dir_cli, c.piso_dir_cli, c.nombre_cli,
+         c.apellidos_cli;
+
+-- Q1
+
+SELECT 1 AS agrupa,
+       fecha_ped AS fecha,
+       hora_ped || ':00' AS hora,
+       cod_ped AS codigo,
+       precio_ped_eu AS precio_eu,
+       valoracion_ped AS valoracion
+FROM pedido
+ORDER BY fecha DESC, hora DESC;
+
+-- Q1_1
+
+SELECT c.cod_ped,
+       c.fecha_ped,
+       cantidad,
+       c.cod_piz AS num_piz,
+       nombre_piz AS nombre,
+       tamanyo_piz AS tamanyo,
+       precio_piz_eu AS precio_eu
+FROM pizza p, contenido c, pedido pe
+WHERE p.cod_piz = c.cod_piz AND
+      pe.cod_ped = c.cod_ped AND
+      pe.fecha_ped = c.fecha_ped
+ORDER BY cantidad DESC;
+
+-- Q2
+
+SELECT 1 AS agrupa,
+       c.apellidos_cli AS apellidos,
+       c.nombre_cli AS nombre,
+       c.dni_cli AS dni,
+       '{tipo_via:' || c.tipo_via_dir_cli ||
+       ',nombre_via:' || c.nombre_via_dir_cli ||
+       ',portal:' || c.portal_dir_cli ||
+       CASE 
+           WHEN c.esc_dir_cli IS NULL THEN ',escalera:null'
+           WHEN c.esc_dir_cli IS NOT NULL THEN ',escalera:' || c.esc_dir_cli
+       END ||
+       ',puerta:' || c.puerta_dir_cli ||
+       CASE 
+           WHEN c.piso_dir_cli IS NULL THEN ',piso:null'
+           WHEN c.piso_dir_cli IS NOT NULL THEN ',piso:' || c.piso_dir_cli
+       END ||
+       '}' AS direccion,
+       '{' || LISTAGG(t.tlf_cli, ',') WITHIN GROUP (ORDER BY t.tlf_cli)
+       || '}' AS telefonos
+FROM cliente c
+LEFT JOIN tlf_cliente t ON c.dni_cli = t.dni_cli
+GROUP BY c.apellidos_cli, c.nombre_cli, c.dni_cli, c.tipo_via_dir_cli,
+         c.nombre_via_dir_cli, c.portal_dir_cli, c.esc_dir_cli,
+         c.puerta_dir_cli, c.piso_dir_cli
+ORDER BY apellidos, nombre;
+
+-- Q2_1
+
+SELECT mes.dni_cli AS dni,
+       '{anyo:' || mes.anyo_mem ||
+       ',mes:' || mes.mes_orden || '}' AS periodo_mes,
+       mes.nombre_mem AS nombre,
+       m.pedidos_mem AS pedidos_necesarios,
+       m.precio_mes_mem_eu AS precio_mes,
+       m.descuento_mem_per AS descuento
+FROM membresia m, meses_mem mes
+WHERE m.nombre_mem = mes.nombre_mem
+ORDER BY mes.anyo_mem DESC, mes.mes_orden DESC;
+
+-- Q2_2
+
+SELECT dni_cli AS dni,
+       valoracion_ped AS valoracion,
+       cod_ped AS codigo,
+       fecha_ped AS fecha,
+       hora_ped AS hora,
+       precio_ped_eu AS precio_eu
+FROM pedido
+WHERE valoracion_ped IS NOT NULL
+ORDER BY valoracion DESC;
+
+-- Q3
+
+SELECT 1 AS agrupa,
+       e.anyos_contrato_emp AS anyos_contratado,
+       e.dni_emp AS dni,
+       e.nombre_emp AS nombre,
+       e.apellidos_emp AS apellidos,
+       e.edad_emp AS edad,
+       CASE
+           WHEN e.activo_emp = 1 THEN 'true'
+           WHEN e.activo_emp = 0 THEN 'false'
+       END AS activo,
+       CASE
+           WHEN r.dni_rep IS NOT NULL THEN 'repartidor'
+           WHEN d.dni_dep IS NOT NULL THEN 'dependiente'
+       END AS tipo
+FROM empleado e
+LEFT JOIN repartidor r ON e.dni_emp = r.dni_rep
+LEFT JOIN dependiente d ON e.dni_emp = d.dni_dep
+WHERE e.anyos_contrato_emp > 5
+  AND (r.dni_rep IS NOT NULL OR d.dni_dep IS NOT NULL)
+ORDER BY anyos_contratado;
+
+-- Q4
+
+SELECT 1 AS agrupa,
+       matricula_veh AS matricula,
+       capacidad_veh AS capacidad,
+       modelo_veh AS modelo,
+       fecha_itv_veh AS fecha_itv
+FROM vehiculo
+ORDER BY matricula;
+
+-- Q4_1
+
+SELECT c.matricula_veh AS matricula,
+       e.apellidos_emp AS apellidos,
+       e.nombre_emp AS nombre,
+       e.dni_emp AS dni_emp,
+       e.anyos_contrato_emp AS anyos_contratado,
+       e.edad_emp AS edad,
+       CASE
+           WHEN e.activo_emp = 1 THEN 'true'
+           WHEN e.activo_emp = 0 THEN 'false'
+       END AS activo
+FROM conduce c, empleado e
+WHERE c.dni_rep = e.dni_emp
+ORDER BY apellidos, nombre;
+
+-- Q5
+
+SELECT 1 AS agrupa,
+       nombre_piz AS nombre,
+       cod_piz AS num_piz
+FROM pizza
+ORDER BY nombre;
+
+-- Q5_1
+
+SELECT l.cod_piz AS num_piz,
+       i.nombre_ing AS nombre,
+       i.cod_ing || i.nif_prov AS numero,
+       i.precio_ing_eukg AS precio_eu,
+       i.ing_despensa_kg AS cant_despensa
+FROM lleva l, ingrediente i
+WHERE l.cod_ing = i.cod_ing AND
+      l.nif_prov = i.nif_prov
+ORDER BY nombre, numero;
+
+-- Q5_1_1
+
+SELECT i.cod_ing || i.nif_prov AS numero,
+       s.dia_sum AS dia,
+       s.hora_sum || ':00' AS hora,
+       s.cantidad_sum_kg AS cantidad
+FROM suministro s, ingrediente i
+WHERE s.nif_prov = i.nif_prov AND
+      s.cod_ing = i.cod_ing
+ORDER BY dia DESC, hora DESC;
+
+-- Empleado
+
+SELECT e.dni_emp AS dni,
+       e.nombre_emp AS nombre,
+       e.apellidos_emp AS apellidos,
+       e.anyos_contrato_emp AS anyos_contratado,
+       e.edad_emp AS edad,
+       CASE
+           WHEN e.activo_emp = 1 THEN 'true'
+           WHEN e.activo_emp = 0 THEN 'false'
+       END AS activo,
+       CASE
+           WHEN r.dni_rep IS NOT NULL THEN 'repartidor'
+           WHEN d.dni_dep IS NOT NULL THEN 'dependiente'
+       END AS tipo
+FROM empleado e
+LEFT JOIN repartidor r ON e.dni_emp = r.dni_rep
+LEFT JOIN dependiente d ON e.dni_emp = d.dni_dep
+WHERE r.dni_rep IS NOT NULL OR d.dni_dep IS NOT NULL;
+      
+-- Vehículo
+
+SELECT matricula_veh AS matricula,
+       capacidad_veh AS capacidad,
+       modelo_veh AS modelo,
+       fecha_itv_veh AS fecha_itv
+FROM vehiculo;
+
+-- Suministro
+
+SELECT dia_sum AS dia,
+       cod_ing || nif_prov AS num_ing,
+       hora_sum || ':00' AS hora,
+       cantidad_sum_kg AS cantidad
+FROM suministro;
+
+-- Ingrediente
+
+SELECT cod_ing || nif_prov AS numero,
+       nombre_ing AS nombre,
+       precio_ing_eukg AS precio_eu,
+       ing_despensa_kg AS cant_dispensa
+FROM ingrediente;
+
+-- Pizza
+
+SELECT p.cod_piz AS num_pizza,
+       l.cod_ing || l.nif_prov AS num_ing,
+       p.nombre_piz AS nombre,
+       p.precio_piz_eu AS precio_eu,
+       p.tamanyo_piz AS tamanyo,
+       i.nombre_ing AS nombre_ing
+FROM pizza p, lleva l, ingrediente i
+WHERE p.cod_piz = l.cod_piz AND
+      l.cod_ing = i.cod_ing AND
+      l.nif_prov = i.nif_prov;
+      
+-- Pedido
+
+SELECT p.cod_ped AS codigo,
+       p.fecha_ped AS fecha,
+       c.cod_piz AS num_piz,
+       p.hora_ped || ':00' AS hora,
+       p.precio_ped_eu AS precio_eu,
+       p.valoracion_ped AS valoracion,
+       c.cantidad AS cantidad,
+       pi.nombre_piz AS nombre_piz,
+       pi.tamanyo_piz AS tamnyo_piz
+FROM pedido p, contenido c, pizza pi
+WHERE p.cod_ped = c.cod_ped AND
+      p.fecha_ped = c.fecha_ped AND
+      c.cod_piz = pi.cod_piz;
+      
+-- Membresía
+
+SELECT nombre_mem AS nombre,
+       pedidos_mem AS pedidos_necesarios,
+       precio_mes_mem_eu AS precio_mes,
+       descuento_mem_per AS descuento
+FROM membresia;
+
+-- Cliente
+
+SELECT dni, nombre_mem, direccion, telefonos, nombre, apellidos,
+       '{' || LISTAGG(periodo_mes, ',') WITHIN GROUP (ORDER BY periodo_mes) || '}'
+FROM (
+SELECT c.dni_cli AS dni,
+       COALESCE(m.nombre_mem, 'Ninguna') AS nombre_mem,
+       '{tipo_via:' || c.tipo_via_dir_cli ||
+       ',nombre_via:' || c.nombre_via_dir_cli ||
+       ',portal:' || c.portal_dir_cli ||
+       CASE 
+           WHEN c.esc_dir_cli IS NULL THEN ',escalera:null'
+           ELSE ',escalera:' || c.esc_dir_cli
+       END ||
+       ',puerta:' || c.puerta_dir_cli ||
+       CASE 
+           WHEN c.piso_dir_cli IS NULL THEN ',piso:null'
+           ELSE ',piso:' || c.piso_dir_cli
+       END ||
+       '}' AS direccion,
+       '{' || LISTAGG(t.tlf_cli, ',') WITHIN GROUP (ORDER BY t.tlf_cli)
+       || '}' AS telefonos,
+       c.nombre_cli AS nombre,
+       c.apellidos_cli AS apellidos,
+       CASE
+           WHEN m.nombre_mem IS NULL THEN NULL
+           ELSE '{anyo:' || m.anyo_mem ||
+                ',mes:' || m.mes_orden || '}'
+       END AS periodo_mes
+FROM cliente c
+LEFT JOIN meses_mem m ON c.dni_cli = m.dni_cli
+LEFT JOIN tlf_cliente t ON c.dni_cli = t.dni_cli
+GROUP BY c.dni_cli, m.nombre_mem, c.tipo_via_dir_cli,
+         c.nombre_via_dir_cli, c.portal_dir_cli, c.esc_dir_cli,
+         c.puerta_dir_cli, c.piso_dir_cli, c.nombre_cli,
+         c.apellidos_cli, m.anyo_mem, m.mes_orden)
+GROUP BY dni, nombre_mem, direccion, telefonos, nombre, apellidos;
