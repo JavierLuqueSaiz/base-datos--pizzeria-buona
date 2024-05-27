@@ -1,0 +1,125 @@
+-- Empleado
+
+COPY empleado (dni, nombre, apellidos, anyos_contratado, edad, activo,
+               tipo)
+FROM 'empleado.csv'
+WITH HEADER = true;
+
+-- Vehículo
+
+COPY vehiculo (matricula, capacidad, modelo, fecha_itv)
+FROM 'vehiculo.csv'
+WITH HEADER = true;
+
+-- Suministro
+
+COPY suministro (dia, num_ing, hora, cantidad)
+FROM 'suministro.csv'
+WITH HEADER = true;
+
+-- Ingrediente
+
+COPY ingrediente (numero, nombre, precio_eu, cant_dispensa)
+FROM 'ingrediente.csv'
+WITH HEADER = true;
+
+-- Pizza
+
+COPY pizza (num_pizza, num_ing, nombre, precio_eu, tamanyo, nombre_ing)
+FROM 'pizza.csv'
+WITH HEADER = true;
+
+-- Pedido
+
+COPY pedido (codigo, fecha, num_piz, hora, precio_eu, valoracion,
+             cantidad, nombre_piz, tamanyo_piz)
+FROM 'pedido.csv'
+WITH HEADER = true;
+
+-- Membresía
+
+COPY membresia (nombre, pedidos_necesarios, precio_mes, descuento)
+FROM 'membresia.csv'
+WITH HEADER = true;
+
+-- Cliente
+
+COPY cliente (dni, nombre_mem, telefonos, nombre, apellidos, periodo_mes)
+FROM 'cliente.csv'
+WITH HEADER = true;
+
+-- Tabla Pedido por fecha y hora (Q1)
+
+COPY pedido_por_fecha_y_hora (grupa, fecha, hora, codigo, precio_eu,
+                              valoracion)
+FROM 'Q1.csv'
+WITH HEADER = true;
+
+-- Tabla Pizza por cantidad (Q1_1)
+
+COPY pizza_por_cantidad (cod_ped, fecha_ped, cantidad, num_piz, nombre,
+                         tamanyo, precio_eu)
+FROM 'Q1_1.csv'
+WITH HEADER = true;
+
+-- Tabla Cliente por apellidos y nombre (Q2)
+
+COPY cliente_por_apellidos_y_nombre (agrupa, apellidos, nombre, dni,
+                                     direccion, telefonos)
+FROM 'Q2.csv'
+WITH HEADER = true;
+
+-- Tabla Membresía por año y mes (Q2_1)
+
+COPY membresia_por_anyo_y_mes (dni, periodo_mes, nombre,
+                               pedidos_necesarios, precio_mes, descuento)
+FROM 'Q2_1.csv'
+WITH HEADER = true;
+
+-- Tabla Pedido por valoración (Q2_2)
+
+COPY pedido_por_valoracion (dni, valoracion, codigo, fecha, hora,
+                            precio_eu)
+FROM 'Q2_2.csv'
+WITH HEADER = true;
+
+-- Tabla Empleado más de cinco años (Q3)
+
+COPY empleado_mas_cinco_anyos (agrupa, anyos_contratado, dni, nombre,
+                               apellidos, edad, activo, tipo)
+FROM 'Q3.csv'
+WITH HEADER = true;
+
+-- Tabla Vehículo por matrícula (Q4)
+
+COPY vehiculo_por_matricula (agrupa, matricula, capacidad, modelo,
+                             fecha_itv)
+FROM 'Q4.csv'
+WITH HEADER = true;
+
+-- Tabla Repartidor por apellidos y nombre (Q4_1)
+
+COPY repartidor_por_apellidos_y_nombre (matricula, apellidos, nombre, dni,
+                                        anyos_contratado, edad, activo)
+FROM 'Q4_1.csv'
+WITH HEADER = true;
+
+-- Tabla Pizza por nombre (Q5)
+
+COPY pizza_por_nombre (agrupa, nombre, num_piz)
+FROM 'Q5.csv'
+WITH HEADER = true;
+
+-- Tabla Ingrediente por nombre y numero (Q5_1)
+
+COPY ingrediente_por_nombre_y_numero (num_piz, nombre, numero, precio_eu,
+                                      cant_despensa)
+FROM 'Q5_1.csv'
+WITH HEADER = true;
+
+-- Tabla Suministro por día y hora (Q5_1_1)
+
+COPY suministro_por_dia_y_hora (numero, dia, hora, cantidad)
+FROM 'Q5_1_1.csv'
+WITH HEADER = true;
+
